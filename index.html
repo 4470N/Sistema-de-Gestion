@@ -875,6 +875,33 @@
     }
       .card-header-badge { display: none; }
     }
+
+    /* ══════════════════════════════════════
+       TIPO SELECTOR
+    ══════════════════════════════════════ */
+    .tipo-selector { margin-bottom: 24px; }
+    .tipo-label {
+      font-size: 13px; font-weight: 700; color: var(--navy);
+      margin-bottom: 12px; letter-spacing: 0.3px;
+    }
+    .tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tipo-option {
+      border: 2px solid var(--border); border-radius: 12px; padding: 20px 16px;
+      cursor: pointer; background: var(--input-bg); transition: all 0.22s;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+    }
+    .tipo-option:hover {
+      border-color: var(--celeste); background: white;
+      transform: translateY(-2px); box-shadow: var(--shadow-md);
+    }
+    .tipo-option.active {
+      border-color: var(--navy); background: white;
+      box-shadow: 0 0 0 3px rgba(15,42,94,0.08), var(--shadow-md); transform: translateY(-2px);
+    }
+    .tipo-icon { font-size: 30px; }
+    .tipo-name { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .tipo-sub  { font-size: 11px; color: var(--muted); }
+    .tipo-option.active .tipo-sub { color: var(--celeste); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -894,9 +921,9 @@
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-eyebrow">Sistema ART activo</div>
-    <h1>Apertura de <span class="accent">Caso ART</span></h1>
-    <p>Ingrese los datos para iniciar el proceso. Los formularios serán enviados automáticamente al empleado y al empleador para completar el informe final.</p>
+    <div class="hero-eyebrow">Sistema de Gestión activo</div>
+    <h1>Apertura de <span class="accent">Caso</span></h1>
+    <p>Ingrese los datos para iniciar el proceso. Los formularios se enviarán automáticamente al asegurado o al empleado y empleador, según corresponda.</p>
   </div>
 </section>
 
@@ -926,7 +953,27 @@
 <div class="page-wrap" id="pageWrap">
 
   <!-- ═══════════════════════════
-       CARD 1 — DATOS DEL SINIESTRO
+       SELECTOR DE TIPO
+  ═══════════════════════════ -->
+  <div class="tipo-selector">
+    <div class="tipo-label">¿Qué tipo de caso vas a abrir?</div>
+    <div class="tipo-grid">
+      <div class="tipo-option active" id="tipo-art" onclick="selectTipo('art')">
+        <div class="tipo-icon">🏥</div>
+        <div class="tipo-name">ART</div>
+        <div class="tipo-sub">Accidente laboral</div>
+      </div>
+      <div class="tipo-option" id="tipo-siniestro" onclick="selectTipo('siniestro')">
+        <div class="tipo-icon">🚗</div>
+        <div class="tipo-name">Siniestro</div>
+        <div class="tipo-sub">Accidente de tránsito</div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="tipo_caso" value="art">
+
+  <!-- ═══════════════════════════
+       CARD 1 — DATOS DEL CASO
   ═══════════════════════════ -->
   <div class="card">
     <div class="card-header">
@@ -959,19 +1006,33 @@
         </div>
       </div>
 
-      <div class="row-2">
-        <div class="field">
-          <label>Nombre del Empleado <span class="req">*</span></label>
-          <div class="input-wrap">
-            <span class="input-icon">👤</span>
-            <input type="text" id="empleado_nombre" placeholder="Apellido, Nombre" maxlength="60">
+      <!-- ART: empleado + empleador -->
+      <div id="campos-art">
+        <div class="row-2">
+          <div class="field">
+            <label>Nombre del Empleado <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="empleado_nombre" placeholder="Apellido, Nombre" maxlength="60">
+            </div>
+          </div>
+          <div class="field">
+            <label>Empresa / Empleador <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">🏢</span>
+              <input type="text" id="empleador_nombre" placeholder="Razón social o nombre" maxlength="60">
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Siniestro: asegurado + aseguradora -->
+      <div id="campos-siniestro" style="display:none">
         <div class="field">
-          <label>Empresa / Empleador <span class="req">*</span></label>
+          <label>Nombre del Asegurado <span class="req">*</span></label>
           <div class="input-wrap">
-            <span class="input-icon">🏢</span>
-            <input type="text" id="empleador_nombre" placeholder="Razón social o nombre" maxlength="60">
+            <span class="input-icon">👤</span>
+            <input type="text" id="nombre_asegurado" placeholder="Apellido, Nombre" maxlength="60">
           </div>
         </div>
       </div>
@@ -993,23 +1054,37 @@
     </div>
     <div class="card-body">
 
-      <div class="info-box">
-        <strong>Mails de destino.</strong> A estas direcciones se enviarán los links a los formularios de ampliación de denuncia ART.
+      <div class="info-box" id="info-contacto">
+        <strong>Mails de destino.</strong> A estas direcciones se enviarán los links a los formularios de ampliación de denuncia.
       </div>
 
-      <div class="row-2">
-        <div class="field">
-          <label>Mail del Empleado <span class="req">*</span></label>
-          <div class="input-wrap">
-            <span class="input-icon">@</span>
-            <input type="email" id="mail_empleado" placeholder="empleado@mail.com" maxlength="80">
+      <!-- ART: mail empleado + mail empleador -->
+      <div id="contacto-art">
+        <div class="row-2">
+          <div class="field">
+            <label>Mail del Empleado <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">@</span>
+              <input type="email" id="mail_empleado" placeholder="empleado@mail.com" maxlength="80">
+            </div>
+          </div>
+          <div class="field">
+            <label>Mail del Empleador <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="input-icon">@</span>
+              <input type="email" id="mail_empleador" placeholder="empresa@mail.com" maxlength="80">
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Siniestro: mail asegurado -->
+      <div id="contacto-siniestro" style="display:none">
         <div class="field">
-          <label>Mail del Empleador <span class="req">*</span></label>
+          <label>Mail del Asegurado <span class="req">*</span></label>
           <div class="input-wrap">
             <span class="input-icon">@</span>
-            <input type="email" id="mail_empleador" placeholder="empresa@mail.com" maxlength="80">
+            <input type="email" id="mail_asegurado" placeholder="asegurado@mail.com" maxlength="80">
           </div>
         </div>
       </div>
@@ -1069,59 +1144,106 @@
     <div class="card-header">
       <div class="card-header-icon">🏥</div>
       <div class="card-header-text">
-        <div class="card-header-title">ART Interviniente</div>
-        <div class="card-header-sub">Define el template de informe a utilizar</div>
+        <div class="card-header-title" id="card3-title">ART Interviniente</div>
+        <div class="card-header-sub" id="card3-sub">Define el template de informe a utilizar</div>
       </div>
       <div class="card-header-badge">Paso 3 / 3</div>
     </div>
     <div class="card-body">
 
-      <div class="info-box">
+      <div class="info-box" id="info-card3">
         <strong>Seleccioná la ART del caso.</strong> Provincia ART, La Segunda y Prevención ART tienen modelo específico. El resto usa el modelo propio del estudio.
       </div>
 
       <input type="hidden" id="art_seleccionada">
 
-      <div class="art-grid">
+      <!-- ART selector -->
+      <div id="selector-art">
+        <div class="art-grid">
 
-        <div class="art-option" onclick="selectArt(this, 'Provincia ART')">
-          <div class="art-option-top">
-            <div class="art-radio"></div>
-            <div class="art-name">Provincia ART</div>
+          <div class="art-option" onclick="selectArt(this, 'Provincia ART')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Provincia ART</div>
+            </div>
+            <div class="art-sub">Provincia Seguros</div>
+            <span class="art-tag tag-especifico"></span>
           </div>
-          <div class="art-sub">Provincia Seguros</div>
-          <span class="art-tag tag-especifico"></span>
-        </div>
 
-        <div class="art-option" onclick="selectArt(this, 'La Segunda ART')">
-          <div class="art-option-top">
-            <div class="art-radio"></div>
-            <div class="art-name">La Segunda ART</div>
+          <div class="art-option" onclick="selectArt(this, 'La Segunda ART')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">La Segunda ART</div>
+            </div>
+            <div class="art-sub">La Segunda Seguros</div>
+            <span class="art-tag tag-especifico"></span>
           </div>
-          <div class="art-sub">La Segunda Seguros</div>
-          <span class="art-tag tag-especifico"></span>
-        </div>
 
-        <div class="art-option" onclick="selectArt(this, 'Prevención ART')">
-          <div class="art-option-top">
-            <div class="art-radio"></div>
-            <div class="art-name">Prevención ART</div>
+          <div class="art-option" onclick="selectArt(this, 'Prevención ART')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Prevención ART</div>
+            </div>
+            <div class="art-sub">Prevención Seguros</div>
+            <span class="art-tag tag-especifico"></span>
           </div>
-          <div class="art-sub">Prevención Seguros</div>
-          <span class="art-tag tag-especifico"></span>
-        </div>
 
-        <div class="art-option" onclick="selectArt(this, 'Otra ART')">
-          <div class="art-option-top">
-            <div class="art-radio"></div>
-            <div class="art-name">Otra ART</div>
+          <div class="art-option" onclick="selectArt(this, 'Otra ART')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Otra ART</div>
+            </div>
+            <div class="art-sub">Resto de aseguradoras</div>
+            <span class="art-tag tag-propio"></span>
           </div>
-          <div class="art-sub">Resto de aseguradoras</div>
-          <span class="art-tag tag-propio"></span>
-        </div>
 
+        </div>
       </div>
-      <div class="art-error" id="art-error">⚠️ Seleccioná una ART antes de continuar.</div>
+
+      <!-- Siniestro: aseguradora selector -->
+      <div id="selector-siniestro" style="display:none">
+        <div class="art-grid">
+
+          <div class="art-option" onclick="selectArt(this, 'Provincia Seguros S.A')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Provincia Seguros S.A.</div>
+            </div>
+            <div class="art-sub">Modelo específico</div>
+            <span class="art-tag tag-especifico"></span>
+          </div>
+
+          <div class="art-option" onclick="selectArt(this, 'Sancor Seguros')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Sancor Seguros</div>
+            </div>
+            <div class="art-sub">Modelo genérico</div>
+            <span class="art-tag tag-propio"></span>
+          </div>
+
+          <div class="art-option" onclick="selectArt(this, 'Provincia Seguros 2')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Provincia Seguros 2</div>
+            </div>
+            <div class="art-sub">Modelo genérico</div>
+            <span class="art-tag tag-propio"></span>
+          </div>
+
+          <div class="art-option" onclick="selectArt(this, 'Otra aseguradora')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Otra aseguradora</div>
+            </div>
+            <div class="art-sub">Modelo genérico</div>
+            <span class="art-tag tag-propio"></span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="art-error" id="art-error">⚠️ Seleccioná una opción antes de continuar.</div>
 
     </div>
   </div>
@@ -1142,31 +1264,42 @@
         <span class="resumen-key">N° Siniestro</span>
         <span class="resumen-val highlight" id="r-siniestro">—</span>
       </div>
-      <div class="resumen-row">
+      <!-- ART rows -->
+      <div class="resumen-row" id="r-row-empleado">
         <span class="resumen-key">Empleado</span>
         <span class="resumen-val" id="r-empleado">—</span>
       </div>
-      <div class="resumen-row">
+      <div class="resumen-row" id="r-row-empleador">
         <span class="resumen-key">Empleador</span>
         <span class="resumen-val" id="r-empleador">—</span>
       </div>
-      <div class="resumen-row">
+      <div class="resumen-row" id="r-row-mail-empleado">
         <span class="resumen-key">Mail empleado</span>
         <span class="resumen-val" id="r-mail-empleado">—</span>
       </div>
-      <div class="resumen-row">
+      <div class="resumen-row" id="r-row-mail-empleador">
         <span class="resumen-key">Mail empleador</span>
         <span class="resumen-val" id="r-mail-empleador">—</span>
       </div>
+      <!-- Siniestro rows -->
+      <div class="resumen-row" id="r-row-asegurado" style="display:none">
+        <span class="resumen-key">Asegurado</span>
+        <span class="resumen-val" id="r-asegurado">—</span>
+      </div>
+      <div class="resumen-row" id="r-row-mail-asegurado" style="display:none">
+        <span class="resumen-key">Mail asegurado</span>
+        <span class="resumen-val" id="r-mail-asegurado">—</span>
+      </div>
+      <!-- Compartidos -->
       <div class="resumen-row" id="r-row-cc" style="display:none">
         <span class="resumen-key">Copia a</span>
         <span class="resumen-val" id="r-cc-abogados">—</span>
       </div>
       <div class="resumen-row">
-        <span class="resumen-key">ART</span>
+        <span class="resumen-key" id="r-label-art">ART</span>
         <span class="resumen-val highlight" id="r-art">—</span>
       </div>
-      <div class="resumen-row">
+      <div class="resumen-row" id="r-row-template">
         <span class="resumen-key">Template informe</span>
         <span class="resumen-val" id="r-template">—</span>
       </div>
@@ -1220,11 +1353,61 @@
 
 <script>
   // ══════════════════════════════════════
-  // WEBHOOK URL — REEMPLAZAR ANTES DE DEPLOY
+  // WEBHOOK URLS — REEMPLAZAR ANTES DE DEPLOY
   // ══════════════════════════════════════
-  const WEBHOOK_URL = "https://entire-backup-occasionally-affects.trycloudflare.com/webhook/art-apertura";
+  const WEBHOOK_URL_ART       = "https://entire-backup-occasionally-affects.trycloudflare.com/webhook/art-apertura";
+  const WEBHOOK_URL_SINIESTRO = "https://entire-backup-occasionally-affects.trycloudflare.com/webhook/art-apertura";
 
-  // ── Selección de ART ──
+  // ── Tipo de caso ──
+  let tipoCaso = "art";
+
+  function selectTipo(tipo) {
+    tipoCaso = tipo;
+    document.getElementById("tipo_caso").value = tipo;
+    document.getElementById("tipo-art").classList.toggle("active", tipo === "art");
+    document.getElementById("tipo-siniestro").classList.toggle("active", tipo === "siniestro");
+
+    const esArt = tipo === "art";
+
+    // Mostrar/ocultar secciones
+    document.getElementById("campos-art").style.display         = esArt ? "" : "none";
+    document.getElementById("campos-siniestro").style.display   = esArt ? "none" : "";
+    document.getElementById("contacto-art").style.display       = esArt ? "" : "none";
+    document.getElementById("contacto-siniestro").style.display = esArt ? "none" : "";
+    document.getElementById("selector-art").style.display       = esArt ? "" : "none";
+    document.getElementById("selector-siniestro").style.display = esArt ? "none" : "";
+
+    // Resumen rows
+    ["r-row-empleado","r-row-empleador","r-row-mail-empleado","r-row-mail-empleador","r-row-template"]
+      .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = esArt ? "" : "none"; });
+    ["r-row-asegurado","r-row-mail-asegurado"]
+      .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = esArt ? "none" : ""; });
+
+    // Título Card 3
+    document.getElementById("card3-title").textContent = esArt ? "ART Interviniente" : "Aseguradora";
+    document.getElementById("card3-sub").textContent   = esArt ? "Define el template de informe a utilizar" : "Define el modelo de informe a utilizar";
+    document.getElementById("info-card3").innerHTML    = esArt
+      ? "<strong>Seleccioná la ART del caso.</strong> Provincia ART, La Segunda y Prevención ART tienen modelo específico. El resto usa el modelo propio del estudio."
+      : "<strong>Seleccioná la aseguradora del caso.</strong> Provincia Seguros tiene modelo específico. El resto usa el modelo genérico.";
+    document.getElementById("r-label-art").textContent = esArt ? "ART" : "Aseguradora";
+
+    // Botón submit
+    const lbl = document.querySelector(".btn-submit-label");
+    if (lbl) {
+      lbl.innerHTML = esArt
+        ? "Abrir caso y enviar formularios<small>Se notificará al empleado y empleador</small>"
+        : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
+    }
+
+    // Resetear selección ART/aseguradora
+    document.querySelectorAll(".art-option").forEach(o => o.classList.remove("selected"));
+    document.getElementById("art_seleccionada").value = "";
+    document.getElementById("art-error").style.display = "none";
+
+    actualizarResumen();
+  }
+
+  // ── Selección de ART / Aseguradora ──
   function selectArt(el, nombre) {
     document.querySelectorAll(".art-option").forEach(o => o.classList.remove("selected"));
     el.classList.add("selected");
@@ -1262,32 +1445,26 @@
   // ── Template según ART ──
   function templateDeArt(art) {
     const especificos = ["Provincia ART", "La Segunda ART", "Prevención ART"];
-    return especificos.includes(art)
-      ? "Modelo específico — " + art
-      : "Modelo propio del estudio";
+    return especificos.includes(art) ? "Modelo específico — " + art : "Modelo propio del estudio";
   }
 
   // ── Resumen en tiempo real ──
   function actualizarResumen() {
-    const g   = id => document.getElementById(id)?.value?.trim() || "";
-    const art = g("art_seleccionada");
+    const g    = id => document.getElementById(id)?.value?.trim() || "";
+    const art  = g("art_seleccionada");
+    const esArt = tipoCaso === "art";
 
-    const campos = {
-      "r-siniestro":     g("nro_siniestro")     || "—",
-      "r-empleado":      g("empleado_nombre")   || "—",
-      "r-empleador":     g("empleador_nombre")  || "—",
-      "r-mail-empleado": g("mail_empleado")     || "—",
-      "r-mail-empleador":g("mail_empleador")    || "—",
-      "r-art":           art                    || "—",
-      "r-template":      art ? templateDeArt(art) : "—",
-    };
-
-    const paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre");
-    const paso2Ok = g("mail_empleado") && g("mail_empleador");
+    let paso1Ok, paso2Ok;
+    if (esArt) {
+      paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre");
+      paso2Ok = g("mail_empleado") && g("mail_empleador");
+    } else {
+      paso1Ok = g("nro_siniestro") && g("nombre_asegurado");
+      paso2Ok = !!g("mail_asegurado");
+    }
     const paso3Ok = !!art;
     const todosCompletos = paso1Ok && paso2Ok && paso3Ok;
 
-    // Avanzar progress dinámicamente
     document.getElementById("prog-1").classList.toggle("active", true);
     document.getElementById("prog-1").classList.toggle("done",   !!paso1Ok);
     document.getElementById("prog-2").classList.toggle("active", !!paso1Ok);
@@ -1299,42 +1476,53 @@
     const resumen = document.getElementById("resumen");
     if (todosCompletos) {
       resumen.classList.add("visible");
-      Object.entries(campos).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-      });
-      // CC abogados en resumen
+      document.getElementById("r-siniestro").textContent = g("nro_siniestro") || "—";
+      document.getElementById("r-art").textContent       = art || "—";
+      if (esArt) {
+        document.getElementById("r-empleado").textContent      = g("empleado_nombre")  || "—";
+        document.getElementById("r-empleador").textContent     = g("empleador_nombre") || "—";
+        document.getElementById("r-mail-empleado").textContent = g("mail_empleado")    || "—";
+        document.getElementById("r-mail-empleador").textContent= g("mail_empleador")   || "—";
+        document.getElementById("r-template").textContent      = templateDeArt(art);
+      } else {
+        document.getElementById("r-asegurado").textContent     = g("nombre_asegurado") || "—";
+        document.getElementById("r-mail-asegurado").textContent= g("mail_asegurado")   || "—";
+      }
       const ccNombres = getCCNombres();
       const ccRow = document.getElementById("r-row-cc");
       const ccEl  = document.getElementById("r-cc-abogados");
-      if (ccNombres.length > 0) {
-        ccEl.textContent = ccNombres.join(", ");
-        ccRow.style.display = "";
-      } else {
-        ccRow.style.display = "none";
-      }
+      if (ccNombres.length > 0) { ccEl.textContent = ccNombres.join(", "); ccRow.style.display = ""; }
+      else { ccRow.style.display = "none"; }
     } else {
       resumen.classList.remove("visible");
     }
   }
 
   // Listeners en tiempo real
-  ["nro_siniestro","empleado_nombre","empleador_nombre","mail_empleado","mail_empleador"]
+  ["nro_siniestro","empleado_nombre","empleador_nombre","mail_empleado","mail_empleador","nombre_asegurado","mail_asegurado"]
     .forEach(id => document.getElementById(id)?.addEventListener("input", actualizarResumen));
 
   // ── Validación ──
   function validar() {
     clearErrors();
     let ok = true;
-    ok = require("nro_siniestro",    "Ingresá el número de siniestro")             && ok;
-    ok = require("fecha_accidente",  "Ingresá la fecha del accidente")             && ok;
-    ok = require("empleado_nombre",  "Ingresá el nombre del empleado")             && ok;
-    ok = require("empleador_nombre", "Ingresá el nombre del empleador / empresa")  && ok;
-    ok = requireEmail("mail_empleado",  "Ingresá un mail válido para el empleado") && ok;
-    ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador")&& ok;
+    const esArt = tipoCaso === "art";
+
+    ok = require("nro_siniestro",   "Ingresá el número de siniestro")  && ok;
+    ok = require("fecha_accidente", "Ingresá la fecha del accidente")   && ok;
+
+    if (esArt) {
+      ok = require("empleado_nombre",  "Ingresá el nombre del empleado")             && ok;
+      ok = require("empleador_nombre", "Ingresá el nombre del empleador / empresa")  && ok;
+      ok = requireEmail("mail_empleado",  "Ingresá un mail válido para el empleado") && ok;
+      ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador")&& ok;
+    } else {
+      ok = require("nombre_asegurado",    "Ingresá el nombre del asegurado")            && ok;
+      ok = requireEmail("mail_asegurado", "Ingresá un mail válido para el asegurado")   && ok;
+    }
+
     if (!document.getElementById("art_seleccionada").value) {
-      const err = document.getElementById("art-error");
-      err.style.display = "flex";
+      document.getElementById("art-error").style.display = "flex";
       ok = false;
     }
     return ok;
@@ -1349,8 +1537,7 @@
     const el = document.getElementById(id);
     if (!el || !el.value.trim()) { markError(el, msg); return false; }
     if (!/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(el.value.trim())) {
-      markError(el, "El mail no tiene un formato válido");
-      return false;
+      markError(el, "El mail no tiene un formato válido"); return false;
     }
     return true;
   }
@@ -1379,28 +1566,57 @@
     const btn = document.getElementById("btnSubmit");
     btn.disabled = true;
     const _lbl = btn.querySelector(".btn-submit-label");
-    _lbl.textContent = "";
-    _lbl.append("⏳ Abriendo caso...", Object.assign(document.createElement("small"), { textContent: "Por favor esperá" }));
+    _lbl.innerHTML = "⏳ Abriendo caso...<small>Por favor esperá</small>";
 
-    const g   = id => document.getElementById(id)?.value?.trim() || "";
-    const art = g("art_seleccionada");
+    const g    = id => document.getElementById(id)?.value?.trim() || "";
+    const art  = g("art_seleccionada");
+    const esArt = tipoCaso === "art";
 
-    const payload = {
-      nro_siniestro:    g("nro_siniestro"),
-      fecha_accidente:  g("fecha_accidente"),
-      empleado_nombre:  g("empleado_nombre"),
-      empleador_nombre: g("empleador_nombre"),
-      mail_empleado:    g("mail_empleado"),
-      mail_empleador:   g("mail_empleador"),
-      art:              art,
-      template_informe: templateDeArt(art),
-      cc_abogados:      getCCSeleccionados(),
-    };
+    let payload, url, lines;
+
+    if (esArt) {
+      url = WEBHOOK_URL_ART;
+      payload = {
+        tipo_caso:        "art",
+        nro_siniestro:    g("nro_siniestro"),
+        fecha_accidente:  g("fecha_accidente"),
+        empleado_nombre:  g("empleado_nombre"),
+        empleador_nombre: g("empleador_nombre"),
+        mail_empleado:    g("mail_empleado"),
+        mail_empleador:   g("mail_empleador"),
+        art:              art,
+        template_informe: templateDeArt(art),
+        cc_abogados:      getCCSeleccionados(),
+      };
+      lines = [
+        ["N° Siniestro", payload.nro_siniestro],
+        ["Empleado",     payload.empleado_nombre],
+        ["Empleador",    payload.empleador_nombre],
+        ["ART",          payload.art],
+        ["Template",     payload.template_informe],
+      ];
+    } else {
+      url = WEBHOOK_URL_SINIESTRO;
+      payload = {
+        tipo_caso:        "siniestro",
+        nro_siniestro:    g("nro_siniestro"),
+        fecha_accidente:  g("fecha_accidente"),
+        nombre_asegurado: g("nombre_asegurado"),
+        aseguradora:      art,
+        mail_asegurado:   g("mail_asegurado"),
+        cc_abogados:      getCCSeleccionados(),
+      };
+      lines = [
+        ["N° Siniestro", payload.nro_siniestro],
+        ["Asegurado",    payload.nombre_asegurado],
+        ["Aseguradora",  payload.aseguradora],
+      ];
+    }
 
     try {
       const _ctrl = new AbortController();
       const _timer = setTimeout(() => _ctrl.abort(), 20000);
-      const res = await fetch(WEBHOOK_URL, {
+      const res = await fetch(url, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify(payload),
@@ -1410,13 +1626,6 @@
       if (!res.ok) throw new Error("HTTP " + res.status);
 
       const detail = document.getElementById("screenOkDetail");
-      const lines = [
-        ["N° Siniestro", payload.nro_siniestro],
-        ["Empleado",     payload.empleado_nombre],
-        ["Empleador",    payload.empleador_nombre],
-        ["ART",          payload.art],
-        ["Template",     payload.template_informe],
-      ];
       detail.replaceChildren();
       lines.forEach(([k, v], i) => {
         const s = document.createElement("strong");
@@ -1426,11 +1635,16 @@
         if (i < lines.length - 1) detail.appendChild(document.createElement("br"));
       });
 
+      const msgEl = document.querySelector("#screenOk p");
+      if (msgEl) msgEl.textContent = esArt
+        ? "Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador."
+        : "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al asegurado.";
+
       document.getElementById("pageWrap").style.display = "none";
       document.getElementById("screenOk").style.display = "block";
 
     } catch (err) {
-      console.error("[ART] Error al abrir caso:", err.message || err);
+      console.error("[Sistema] Error al abrir caso:", err.message || err);
       const _panel = document.getElementById("screenError");
       const _msgEl = _panel.querySelector("p");
       if (_msgEl) {
@@ -1440,14 +1654,13 @@
       }
       _panel.style.display = "block";
       btn.disabled = false;
-      const _lblR = btn.querySelector(".btn-submit-label");
-      _lblR.textContent = "";
-      _lblR.append("Abrir caso y enviar formularios", Object.assign(document.createElement("small"), { textContent: "Se notificará al empleado y empleador" }));
+      selectTipo(tipoCaso); // restaura texto del botón
     }
   }
 
   function resetError() {
     document.getElementById("screenError").style.display = "none";
+    document.getElementById("pageWrap").style.display = "block";
   }
 </script>
 
