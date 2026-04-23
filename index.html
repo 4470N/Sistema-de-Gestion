@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https:;">
@@ -902,6 +902,17 @@
     .tipo-name { font-size: 15px; font-weight: 700; color: var(--navy); }
     .tipo-sub  { font-size: 11px; color: var(--muted); }
     .tipo-option.active .tipo-sub { color: var(--celeste); font-weight: 600; }
+
+    /* ── iOS & Mobile Fixes ── */
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    * { -webkit-tap-highlight-color: transparent; }
+    button, .btn-submit, label, .art-option, .tipo-option, .cc-item { touch-action: manipulation; }
+    body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    select { background-color: #f8fafc; }
+    @media (max-width: 540px) {
+      .footer-text, .footer-text p, .footer-text a { font-size: 10px !important; line-height: 1.6 !important; }
+      .footer { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+    }
   </style>
 </head>
 <body>
@@ -1090,48 +1101,77 @@
       </div>
 
       <div class="cc-subtitle">Enviar con copia a:</div>
-      <div class="cc-grid">
 
-        <!-- ▼ ABOGADO 1 — reemplazá MAIL_ABOGADO_1 con el mail real ▼ -->
+      <!-- CC para casos ART -->
+      <div class="cc-grid" id="cc-grid-art">
         <label class="cc-item" onclick="toggleCC(this)">
-          <input type="checkbox" id="cc_ab1" value="MAIL_ABOGADO_1">
+          <input type="checkbox" value="Ygarcia@iezzivarone.com">
           <div class="cc-check"></div>
           <div class="cc-info">
-            <span class="cc-nombre">Dr. Nombre Apellido 1</span>
-            <span class="cc-mail">MAIL_ABOGADO_1</span>
+            <span class="cc-nombre">Y. García</span>
+            <span class="cc-mail">Ygarcia@iezzivarone.com</span>
           </div>
         </label>
-
-        <!-- ▼ ABOGADO 2 — reemplazá MAIL_ABOGADO_2 con el mail real ▼ -->
         <label class="cc-item" onclick="toggleCC(this)">
-          <input type="checkbox" id="cc_ab2" value="MAIL_ABOGADO_2">
+          <input type="checkbox" value="Sbaez@iezzivarone.com">
           <div class="cc-check"></div>
           <div class="cc-info">
-            <span class="cc-nombre">Dr. Nombre Apellido 2</span>
-            <span class="cc-mail">MAIL_ABOGADO_2</span>
+            <span class="cc-nombre">S. Báez</span>
+            <span class="cc-mail">Sbaez@iezzivarone.com</span>
           </div>
         </label>
-
-        <!-- ▼ ABOGADO 3 — reemplazá MAIL_ABOGADO_3 con el mail real ▼ -->
         <label class="cc-item" onclick="toggleCC(this)">
-          <input type="checkbox" id="cc_ab3" value="MAIL_ABOGADO_3">
+          <input type="checkbox" value="Nsantana@iezzivarone.com">
           <div class="cc-check"></div>
           <div class="cc-info">
-            <span class="cc-nombre">Dr. Nombre Apellido 3</span>
-            <span class="cc-mail">MAIL_ABOGADO_3</span>
+            <span class="cc-nombre">N. Santana</span>
+            <span class="cc-mail">Nsantana@iezzivarone.com</span>
           </div>
         </label>
-
-        <!-- ▼ ABOGADO 4 — reemplazá MAIL_ABOGADO_4 con el mail real ▼ -->
         <label class="cc-item" onclick="toggleCC(this)">
-          <input type="checkbox" id="cc_ab4" value="MAIL_ABOGADO_4">
+          <input type="checkbox" value="Siniestros@iezzivarone.com">
           <div class="cc-check"></div>
           <div class="cc-info">
-            <span class="cc-nombre">Dr. Nombre Apellido 4</span>
-            <span class="cc-mail">MAIL_ABOGADO_4</span>
+            <span class="cc-nombre">Área Siniestros</span>
+            <span class="cc-mail">Siniestros@iezzivarone.com</span>
           </div>
         </label>
+        <label class="cc-item" onclick="toggleCC(this)">
+          <input type="checkbox" value="Nsaiz@iezzivarone.com">
+          <div class="cc-check"></div>
+          <div class="cc-info">
+            <span class="cc-nombre">N. Saiz</span>
+            <span class="cc-mail">Nsaiz@iezzivarone.com</span>
+          </div>
+        </label>
+      </div>
 
+      <!-- CC para casos Siniestros -->
+      <div class="cc-grid" id="cc-grid-siniestro" style="display:none">
+        <label class="cc-item" onclick="toggleCC(this)">
+          <input type="checkbox" value="Cadipietro@iezzivarone.com">
+          <div class="cc-check"></div>
+          <div class="cc-info">
+            <span class="cc-nombre">C. Adípietro</span>
+            <span class="cc-mail">Cadipietro@iezzivarone.com</span>
+          </div>
+        </label>
+        <label class="cc-item" onclick="toggleCC(this)">
+          <input type="checkbox" value="Amarin@iezzivarone.com">
+          <div class="cc-check"></div>
+          <div class="cc-info">
+            <span class="cc-nombre">A. Marín</span>
+            <span class="cc-mail">Amarin@iezzivarone.com</span>
+          </div>
+        </label>
+        <label class="cc-item" onclick="toggleCC(this)">
+          <input type="checkbox" value="Siniestros@iezzivarone.com">
+          <div class="cc-check"></div>
+          <div class="cc-info">
+            <span class="cc-nombre">Área Siniestros</span>
+            <span class="cc-mail">Siniestros@iezzivarone.com</span>
+          </div>
+        </label>
       </div>
 
     </div>
@@ -1188,12 +1228,12 @@
             <span class="art-tag tag-especifico"></span>
           </div>
 
-          <div class="art-option" onclick="selectArt(this, 'Otra ART')">
+          <div class="art-option" onclick="selectArt(this, 'Iezzi &amp; Varone')">
             <div class="art-option-top">
               <div class="art-radio"></div>
-              <div class="art-name">Otra ART</div>
+              <div class="art-name">Iezzi &amp; Varone</div>
             </div>
-            <div class="art-sub">Resto de aseguradoras</div>
+            <div class="art-sub">Otras aseguradoras</div>
             <span class="art-tag tag-propio"></span>
           </div>
 
@@ -1218,7 +1258,7 @@
               <div class="art-radio"></div>
               <div class="art-name">Sancor Seguros</div>
             </div>
-            <div class="art-sub">Modelo genérico</div>
+            <div class="art-sub">Solicitud de Documentación</div>
             <span class="art-tag tag-propio"></span>
           </div>
 
@@ -1227,16 +1267,16 @@
               <div class="art-radio"></div>
               <div class="art-name">Provincia Seguros 2</div>
             </div>
-            <div class="art-sub">Modelo genérico</div>
+            <div class="art-sub">Solicitud de Documentación</div>
             <span class="art-tag tag-propio"></span>
           </div>
 
-          <div class="art-option" onclick="selectArt(this, 'Otra aseguradora')">
+          <div class="art-option" onclick="selectArt(this, 'Iezzi &amp; Varone')">
             <div class="art-option-top">
               <div class="art-radio"></div>
-              <div class="art-name">Otra aseguradora</div>
+              <div class="art-name">Iezzi &amp; Varone</div>
             </div>
-            <div class="art-sub">Modelo genérico</div>
+            <div class="art-sub">Otras aseguradoras</div>
             <span class="art-tag tag-propio"></span>
           </div>
 
@@ -1404,6 +1444,18 @@
     document.getElementById("art_seleccionada").value = "";
     document.getElementById("art-error").style.display = "none";
 
+    // Alternar grid de CC según tipo de caso
+    const ccArt = document.getElementById("cc-grid-art");
+    const ccSin = document.getElementById("cc-grid-siniestro");
+    if (ccArt) ccArt.style.display = esArt ? "" : "none";
+    if (ccSin) ccSin.style.display = esArt ? "none" : "";
+    // Desmarcar todos al cambiar de tipo
+    document.querySelectorAll("#cc-grid-art .cc-item, #cc-grid-siniestro .cc-item").forEach(item => {
+      item.classList.remove("checked");
+      const cb = item.querySelector("input[type=checkbox]");
+      if (cb) cb.checked = false;
+    });
+
     actualizarResumen();
   }
 
@@ -1425,21 +1477,26 @@
   }
 
   function getCCSeleccionados() {
-    return ["cc_ab1","cc_ab2","cc_ab3","cc_ab4"]
-      .map(id => document.getElementById(id))
-      .filter(cb => cb && cb.checked)
+    const tipo = document.getElementById("tipo_caso").value;
+    const gridId = tipo === "siniestro" ? "cc-grid-siniestro" : "cc-grid-art";
+    const grid = document.getElementById(gridId);
+    if (!grid) return [];
+    return Array.from(grid.querySelectorAll("input[type=checkbox]"))
+      .filter(cb => cb.checked)
       .map(cb => cb.value);
   }
 
   function getCCNombres() {
-    return ["cc_ab1","cc_ab2","cc_ab3","cc_ab4"]
-      .map(id => {
-        const cb = document.getElementById(id);
-        if (!cb || !cb.checked) return null;
+    const tipo = document.getElementById("tipo_caso").value;
+    const gridId = tipo === "siniestro" ? "cc-grid-siniestro" : "cc-grid-art";
+    const grid = document.getElementById(gridId);
+    if (!grid) return [];
+    return Array.from(grid.querySelectorAll("input[type=checkbox]"))
+      .filter(cb => cb.checked)
+      .map(cb => {
         const nombre = cb.closest(".cc-item")?.querySelector(".cc-nombre")?.textContent;
         return nombre || cb.value;
-      })
-      .filter(Boolean);
+      });
   }
 
   // ── Template según ART ──
