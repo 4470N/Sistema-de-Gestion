@@ -1048,6 +1048,37 @@
         </div>
       </div>
 
+      <!-- Seguro / Aseguradora — determina subcarpeta en Drive -->
+      <div id="seguro-carpeta-art">
+        <div class="field">
+          <label>Seguro ART <span class="req">*</span></label>
+          <select id="seguro_carpeta_art">
+            <option value="">— Seleccioná la ART —</option>
+            <option>La Segunda</option>
+            <option>Prevención</option>
+            <option>Provincia</option>
+            <option>Río Uruguay</option>
+            <option>San Cristóbal</option>
+            <option>Allianz</option>
+          </select>
+        </div>
+      </div>
+      <div id="seguro-carpeta-sin" style="display:none">
+        <div class="field">
+          <label>Aseguradora <span class="req">*</span></label>
+          <select id="seguro_carpeta_sin_sel">
+            <option value="">— Seleccioná la aseguradora —</option>
+            <option>Antártida</option>
+            <option>La Caja</option>
+            <option>Colón Cía</option>
+            <option>El Progreso</option>
+            <option>Evolución Seguros</option>
+            <option>Galeno Seguros</option>
+            <option>Nación Seguros</option>
+          </select>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1414,8 +1445,10 @@
     document.getElementById("campos-siniestro").style.display   = esArt ? "none" : "";
     document.getElementById("contacto-art").style.display       = esArt ? "" : "none";
     document.getElementById("contacto-siniestro").style.display = esArt ? "none" : "";
-    document.getElementById("selector-art").style.display       = esArt ? "" : "none";
-    document.getElementById("selector-siniestro").style.display = esArt ? "none" : "";
+    document.getElementById("selector-art").style.display        = esArt ? "" : "none";
+    document.getElementById("selector-siniestro").style.display  = esArt ? "none" : "";
+    document.getElementById("seguro-carpeta-art").style.display  = esArt ? "" : "none";
+    document.getElementById("seguro-carpeta-sin").style.display  = esArt ? "none" : "";
 
     // Resumen rows
     ["r-row-empleado","r-row-empleador","r-row-mail-empleado","r-row-mail-empleador","r-row-template"]
@@ -1424,11 +1457,11 @@
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = esArt ? "none" : ""; });
 
     // Título Card 3
-    document.getElementById("card3-title").textContent = esArt ? "ART Interviniente" : "Aseguradora";
-    document.getElementById("card3-sub").textContent   = esArt ? "Define el template de informe a utilizar" : "Define el modelo de informe a utilizar";
+    document.getElementById("card3-title").textContent = "Tipo de Informe";
+    document.getElementById("card3-sub").textContent   = esArt ? "Modelo de informe ART a generar" : "Modelo de informe de siniestro a generar";
     document.getElementById("info-card3").innerHTML    = esArt
-      ? "<strong>Seleccioná la ART del caso.</strong> Provincia ART, La Segunda y Prevención ART tienen modelo específico. El resto usa el modelo propio del estudio."
-      : "<strong>Seleccioná la aseguradora del caso.</strong> Provincia Seguros tiene modelo específico. El resto usa el modelo genérico.";
+      ? "<strong>Seleccioná el tipo de informe ART.</strong> Provincia ART, La Segunda y Prevención ART tienen modelo específico. El resto usa el modelo propio del estudio."
+      : "<strong>Seleccioná el tipo de informe de siniestro.</strong> Provincia Seguros tiene modelo específico. El resto usa el modelo genérico.";
     document.getElementById("r-label-art").textContent = esArt ? "ART" : "Aseguradora";
 
     // Botón submit
@@ -1439,10 +1472,12 @@
         : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
     }
 
-    // Resetear selección ART/aseguradora
+    // Resetear selección ART/aseguradora y seguro carpeta
     document.querySelectorAll(".art-option").forEach(o => o.classList.remove("selected"));
     document.getElementById("art_seleccionada").value = "";
     document.getElementById("art-error").style.display = "none";
+    document.getElementById("seguro_carpeta_art").value = "";
+    document.getElementById("seguro_carpeta_sin_sel").value = "";
 
     // Alternar grid de CC según tipo de caso
     const ccArt = document.getElementById("cc-grid-art");
@@ -1511,12 +1546,15 @@
     const art  = g("art_seleccionada");
     const esArt = tipoCaso === "art";
 
+    const segCarpeta = esArt
+      ? (document.getElementById("seguro_carpeta_art")?.value || "")
+      : (document.getElementById("seguro_carpeta_sin_sel")?.value || "");
     let paso1Ok, paso2Ok;
     if (esArt) {
-      paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre");
+      paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre") && segCarpeta;
       paso2Ok = g("mail_empleado") && g("mail_empleador");
     } else {
-      paso1Ok = g("nro_siniestro") && g("nombre_asegurado");
+      paso1Ok = g("nro_siniestro") && g("nombre_asegurado") && segCarpeta;
       paso2Ok = !!g("mail_asegurado");
     }
     const paso3Ok = !!art;
@@ -1558,6 +1596,8 @@
   // Listeners en tiempo real
   ["nro_siniestro","empleado_nombre","empleador_nombre","mail_empleado","mail_empleador","nombre_asegurado","mail_asegurado"]
     .forEach(id => document.getElementById(id)?.addEventListener("input", actualizarResumen));
+  ["seguro_carpeta_art","seguro_carpeta_sin_sel"]
+    .forEach(id => document.getElementById(id)?.addEventListener("change", actualizarResumen));
 
   // ── Validación ──
   function validar() {
@@ -1580,6 +1620,16 @@
 
     if (!document.getElementById("art_seleccionada").value) {
       document.getElementById("art-error").style.display = "flex";
+      ok = false;
+    }
+    const selSeguro = esArt
+      ? document.getElementById("seguro_carpeta_art").value
+      : document.getElementById("seguro_carpeta_sin_sel").value;
+    if (!selSeguro) {
+      markError(
+        document.getElementById(esArt ? "seguro_carpeta_art" : "seguro_carpeta_sin_sel"),
+        esArt ? "Seleccioná el seguro ART" : "Seleccioná la aseguradora"
+      );
       ok = false;
     }
     return ok;
@@ -1628,6 +1678,7 @@
     const g    = id => document.getElementById(id)?.value?.trim() || "";
     const art  = g("art_seleccionada");
     const esArt = tipoCaso === "art";
+    const segCarpeta = esArt ? g("seguro_carpeta_art") : g("seguro_carpeta_sin_sel");
 
     let payload, url, lines;
 
@@ -1643,6 +1694,7 @@
         mail_empleador:   g("mail_empleador"),
         art:              art,
         template_informe: templateDeArt(art),
+        seguro_carpeta:   segCarpeta,
         cc_abogados:      getCCSeleccionados(),
       };
       lines = [
@@ -1660,6 +1712,7 @@
         fecha_accidente:  g("fecha_accidente"),
         nombre_asegurado: g("nombre_asegurado"),
         aseguradora:      art,
+        seguro_carpeta:   segCarpeta,
         mail_asegurado:   g("mail_asegurado"),
         cc_abogados:      getCCSeleccionados(),
       };
