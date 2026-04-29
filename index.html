@@ -800,23 +800,43 @@
       align-items: center;
       gap: 4px;
     }
-    input[type="file"] {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
+    .file-input-custom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1.5px dashed var(--border);
       border-radius: 10px;
-      background: white;
-      font-size: 13.5px;
-      color: var(--text);
+      padding: 12px 16px;
       cursor: pointer;
-      box-sizing: border-box;
-      font-family: inherit;
+      background: white;
+      transition: border-color 0.18s, background 0.18s;
+      user-select: none;
     }
-    input[type="file"]:hover { border-color: var(--navy-light); }
+    .file-input-custom:hover {
+      border-color: var(--navy-light);
+      background: #f4f8fd;
+    }
+    .file-btn-pill {
+      flex-shrink: 0;
+      background: var(--navy);
+      color: white;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .file-selected-name {
+      font-size: 13px;
+      color: #6b7a90;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     .denuncia-hint {
       font-size: 11.5px;
       color: #6b7a90;
-      margin-top: 5px;
+      margin-top: 6px;
     }
 
     /* ══════════════════════════════════════
@@ -1087,7 +1107,7 @@
           </select>
         </div>
       </div>
-      <div id="seguro-carpeta-sin" style="display:none">
+      <div id="seguro-carpeta-sin" style="display:none;margin-top:18px">
         <div class="field">
           <label>Aseguradora <span class="req">*</span></label>
           <select id="seguro_carpeta_sin_sel">
@@ -1109,10 +1129,18 @@
         </div>
       </div>
 
-      <div id="adjuntar-denuncia-wrap" style="display:none">
+      <div id="adjuntar-denuncia-wrap" style="display:none;margin-top:18px">
         <div class="field">
           <label>Adjuntar Denuncia</label>
-          <input type="file" id="adjuntar_denuncia" accept=".pdf,.jpg,.jpeg,.png">
+          <input type="file" id="adjuntar_denuncia" accept=".pdf,.jpg,.jpeg,.png"
+                 style="display:none" onchange="actualizarNombreDenuncia(this)">
+          <div class="file-input-custom" onclick="document.getElementById('adjuntar_denuncia').click()">
+            <span class="file-btn-pill">📎 Seleccionar archivo</span>
+            <span class="file-selected-name" id="denuncia-file-name">Sin archivo seleccionado</span>
+          </div>
+          <div id="denuncia-size-error" style="display:none;margin-top:6px;">
+            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
+          </div>
           <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
         </div>
       </div>
@@ -1507,6 +1535,8 @@
     if (denunciaInput) denunciaInput.value = "";
     const denunciaErr = document.getElementById("denuncia-size-error");
     if (denunciaErr) denunciaErr.style.display = "none";
+    const denunciaName = document.getElementById("denuncia-file-name");
+    if (denunciaName) denunciaName.textContent = "Sin archivo seleccionado";
 
     // Alternar grid de CC según tipo de caso
     const ccArt = document.getElementById("cc-grid-art");
@@ -1530,6 +1560,13 @@
     document.getElementById("art_seleccionada").value = nombre;
     document.getElementById("art-error").style.display = "none";
     actualizarResumen();
+  }
+
+  function actualizarNombreDenuncia(input) {
+    const nameEl = document.getElementById("denuncia-file-name");
+    if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : "Sin archivo seleccionado";
+    const errEl = document.getElementById("denuncia-size-error");
+    if (errEl) errEl.style.display = "none";
   }
 
   // ── Toggle CC abogados ──
