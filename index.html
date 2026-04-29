@@ -800,6 +800,24 @@
       align-items: center;
       gap: 4px;
     }
+    input[type="file"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      font-size: 13.5px;
+      color: var(--text);
+      cursor: pointer;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    input[type="file"]:hover { border-color: var(--navy-light); }
+    .denuncia-hint {
+      font-size: 11.5px;
+      color: #6b7a90;
+      margin-top: 5px;
+    }
 
     /* ══════════════════════════════════════
        DIVIDER
@@ -1088,6 +1106,14 @@
             <option>SMG</option>
             <option>VICTORIA</option>
           </select>
+        </div>
+      </div>
+
+      <div id="adjuntar-denuncia-wrap" style="display:none">
+        <div class="field">
+          <label>Adjuntar Denuncia</label>
+          <input type="file" id="adjuntar_denuncia" accept=".pdf,.jpg,.jpeg,.png">
+          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
         </div>
       </div>
 
@@ -1445,8 +1471,9 @@
     document.getElementById("contacto-siniestro").style.display = esArt ? "none" : "";
     document.getElementById("selector-art").style.display        = esArt ? "" : "none";
     document.getElementById("selector-siniestro").style.display  = esArt ? "none" : "";
-    document.getElementById("seguro-carpeta-art").style.display  = esArt ? "" : "none";
-    document.getElementById("seguro-carpeta-sin").style.display  = esArt ? "none" : "";
+    document.getElementById("seguro-carpeta-art").style.display     = esArt ? "" : "none";
+    document.getElementById("seguro-carpeta-sin").style.display     = esArt ? "none" : "";
+    document.getElementById("adjuntar-denuncia-wrap").style.display = esArt ? "none" : "";
 
     // Resumen rows
     ["r-row-empleado","r-row-empleador","r-row-mail-empleado","r-row-mail-empleador","r-row-template"]
@@ -1476,6 +1503,10 @@
     document.getElementById("art-error").style.display = "none";
     document.getElementById("seguro_carpeta_art").value = "";
     document.getElementById("seguro_carpeta_sin_sel").value = "";
+    const denunciaInput = document.getElementById("adjuntar_denuncia");
+    if (denunciaInput) denunciaInput.value = "";
+    const denunciaErr = document.getElementById("denuncia-size-error");
+    if (denunciaErr) denunciaErr.style.display = "none";
 
     // Alternar grid de CC según tipo de caso
     const ccArt = document.getElementById("cc-grid-art");
@@ -1630,6 +1661,16 @@
       );
       ok = false;
     }
+    if (!esArt) {
+      const denunciaFile = document.getElementById("adjuntar_denuncia")?.files?.[0];
+      const denunciaErr  = document.getElementById("denuncia-size-error");
+      if (denunciaFile && denunciaFile.size > 5 * 1024 * 1024) {
+        if (denunciaErr) denunciaErr.style.display = "";
+        ok = false;
+      } else {
+        if (denunciaErr) denunciaErr.style.display = "none";
+      }
+    }
     return ok;
   }
 
@@ -1678,6 +1719,21 @@
     const esArt = tipoCaso === "art";
     const segCarpeta = esArt ? g("seguro_carpeta_art") : g("seguro_carpeta_sin_sel");
 
+    let denunciaB64 = '';
+    let denunciaNombre = '';
+    if (!esArt) {
+      const denunciaFile = document.getElementById("adjuntar_denuncia")?.files?.[0];
+      if (denunciaFile) {
+        denunciaNombre = denunciaFile.name;
+        denunciaB64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload  = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(denunciaFile);
+        });
+      }
+    }
+
     let payload, url, lines;
 
     if (esArt) {
@@ -1713,6 +1769,8 @@
         seguro_carpeta:   segCarpeta,
         mail_asegurado:   g("mail_asegurado"),
         cc_abogados:      getCCSeleccionados(),
+        denuncia_b64:     denunciaB64,
+        denuncia_nombre:  denunciaNombre,
       };
       lines = [
         ["N° Siniestro", payload.nro_siniestro],
