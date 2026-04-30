@@ -1857,7 +1857,10 @@
       }
       _panel.style.display = "block";
       btn.disabled = false;
-      selectTipo(tipoCaso); // restaura texto del botón
+      const _lbl2 = btn.querySelector(".btn-submit-label");
+      if (_lbl2) _lbl2.innerHTML = tipoCaso === "art"
+        ? "Abrir caso y enviar formularios<small>Se notificará al empleado y empleador</small>"
+        : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
     }
   }
 
