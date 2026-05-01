@@ -1145,35 +1145,6 @@
         </div>
       </div>
 
-      <div id="adjuntar-nacion-wrap" style="display:none;margin-top:18px">
-        <div class="field">
-          <label>Adjuntar declaración jurada de alcoholemia</label>
-          <input type="file" id="adjuntar_alcoholemia" accept=".pdf,.jpg,.jpeg,.png"
-                 style="display:none" onchange="actualizarNombreArchivo(this, 'alcoholemia-file-name', 'alcoholemia-size-error')">
-          <div class="file-input-custom" onclick="document.getElementById('adjuntar_alcoholemia').click()">
-            <span class="file-btn-pill">Seleccionar archivo</span>
-            <span class="file-selected-name" id="alcoholemia-file-name">Sin archivo seleccionado</span>
-          </div>
-          <div id="alcoholemia-size-error" style="display:none;margin-top:6px;">
-            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
-          </div>
-          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
-        </div>
-        <div class="field" style="margin-top:12px">
-          <label>Adjuntar Ampliación</label>
-          <input type="file" id="adjuntar_ampliacion_nacion" accept=".pdf,.jpg,.jpeg,.png"
-                 style="display:none" onchange="actualizarNombreArchivo(this, 'ampliacion-nacion-file-name', 'ampliacion-nacion-size-error')">
-          <div class="file-input-custom" onclick="document.getElementById('adjuntar_ampliacion_nacion').click()">
-            <span class="file-btn-pill">Seleccionar archivo</span>
-            <span class="file-selected-name" id="ampliacion-nacion-file-name">Sin archivo seleccionado</span>
-          </div>
-          <div id="ampliacion-nacion-size-error" style="display:none;margin-top:6px;">
-            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
-          </div>
-          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -1401,6 +1372,35 @@
       </div>
 
       <div class="art-error" id="art-error">⚠️ Seleccioná una opción antes de continuar.</div>
+
+      <div id="adjuntar-nacion-wrap" style="display:none;margin-top:18px">
+        <div class="field">
+          <label>Adjuntar declaración jurada de alcoholemia</label>
+          <input type="file" id="adjuntar_alcoholemia" accept=".pdf,.jpg,.jpeg,.png"
+                 style="display:none" onchange="actualizarNombreArchivo(this, 'alcoholemia-file-name', 'alcoholemia-size-error')">
+          <div class="file-input-custom" onclick="document.getElementById('adjuntar_alcoholemia').click()">
+            <span class="file-btn-pill">Seleccionar archivo</span>
+            <span class="file-selected-name" id="alcoholemia-file-name">Sin archivo seleccionado</span>
+          </div>
+          <div id="alcoholemia-size-error" style="display:none;margin-top:6px;">
+            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
+          </div>
+          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Adjuntar Ampliación</label>
+          <input type="file" id="adjuntar_ampliacion_nacion" accept=".pdf,.jpg,.jpeg,.png"
+                 style="display:none" onchange="actualizarNombreArchivo(this, 'ampliacion-nacion-file-name', 'ampliacion-nacion-size-error')">
+          <div class="file-input-custom" onclick="document.getElementById('adjuntar_ampliacion_nacion').click()">
+            <span class="file-btn-pill">Seleccionar archivo</span>
+            <span class="file-selected-name" id="ampliacion-nacion-file-name">Sin archivo seleccionado</span>
+          </div>
+          <div id="ampliacion-nacion-size-error" style="display:none;margin-top:6px;">
+            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
+          </div>
+          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
+        </div>
+      </div>
 
     </div>
   </div>
