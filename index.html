@@ -1145,6 +1145,35 @@
         </div>
       </div>
 
+      <div id="adjuntar-nacion-wrap" style="display:none;margin-top:18px">
+        <div class="field">
+          <label>Adjuntar declaración jurada de alcoholemia</label>
+          <input type="file" id="adjuntar_alcoholemia" accept=".pdf,.jpg,.jpeg,.png"
+                 style="display:none" onchange="actualizarNombreArchivo(this, 'alcoholemia-file-name', 'alcoholemia-size-error')">
+          <div class="file-input-custom" onclick="document.getElementById('adjuntar_alcoholemia').click()">
+            <span class="file-btn-pill">Seleccionar archivo</span>
+            <span class="file-selected-name" id="alcoholemia-file-name">Sin archivo seleccionado</span>
+          </div>
+          <div id="alcoholemia-size-error" style="display:none;margin-top:6px;">
+            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
+          </div>
+          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label>Adjuntar Ampliación</label>
+          <input type="file" id="adjuntar_ampliacion_nacion" accept=".pdf,.jpg,.jpeg,.png"
+                 style="display:none" onchange="actualizarNombreArchivo(this, 'ampliacion-nacion-file-name', 'ampliacion-nacion-size-error')">
+          <div class="file-input-custom" onclick="document.getElementById('adjuntar_ampliacion_nacion').click()">
+            <span class="file-btn-pill">Seleccionar archivo</span>
+            <span class="file-selected-name" id="ampliacion-nacion-file-name">Sin archivo seleccionado</span>
+          </div>
+          <div id="ampliacion-nacion-size-error" style="display:none;margin-top:6px;">
+            <span class="field-error-msg">El archivo supera el límite de 5 MB. Comprimilo antes de adjuntarlo.</span>
+          </div>
+          <div class="denuncia-hint">Opcional · PDF, JPG o PNG · máx. 5 MB</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1359,6 +1388,15 @@
             <span class="art-tag tag-propio"></span>
           </div>
 
+          <div class="art-option" onclick="selectArt(this, 'Nacion Seguros')">
+            <div class="art-option-top">
+              <div class="art-radio"></div>
+              <div class="art-name">Nacion Seguros</div>
+            </div>
+            <div class="art-sub">Declaración jurada</div>
+            <span class="art-tag tag-especifico"></span>
+          </div>
+
         </div>
       </div>
 
@@ -1537,6 +1575,20 @@
     if (denunciaErr) denunciaErr.style.display = "none";
     const denunciaName = document.getElementById("denuncia-file-name");
     if (denunciaName) denunciaName.textContent = "Sin archivo seleccionado";
+    const nacionWrap = document.getElementById("adjuntar-nacion-wrap");
+    if (nacionWrap) nacionWrap.style.display = "none";
+    const alcoholemiaInput = document.getElementById("adjuntar_alcoholemia");
+    if (alcoholemiaInput) alcoholemiaInput.value = "";
+    const alcoholemiaErr = document.getElementById("alcoholemia-size-error");
+    if (alcoholemiaErr) alcoholemiaErr.style.display = "none";
+    const alcoholemiaName = document.getElementById("alcoholemia-file-name");
+    if (alcoholemiaName) alcoholemiaName.textContent = "Sin archivo seleccionado";
+    const ampliacionNacionInput = document.getElementById("adjuntar_ampliacion_nacion");
+    if (ampliacionNacionInput) ampliacionNacionInput.value = "";
+    const ampliacionNacionErr = document.getElementById("ampliacion-nacion-size-error");
+    if (ampliacionNacionErr) ampliacionNacionErr.style.display = "none";
+    const ampliacionNacionName = document.getElementById("ampliacion-nacion-file-name");
+    if (ampliacionNacionName) ampliacionNacionName.textContent = "Sin archivo seleccionado";
 
     // Alternar grid de CC según tipo de caso
     const ccArt = document.getElementById("cc-grid-art");
@@ -1559,7 +1611,16 @@
     el.classList.add("selected");
     document.getElementById("art_seleccionada").value = nombre;
     document.getElementById("art-error").style.display = "none";
+    const nacionWrap = document.getElementById("adjuntar-nacion-wrap");
+    if (nacionWrap) nacionWrap.style.display = nombre === "Nacion Seguros" ? "" : "none";
     actualizarResumen();
+  }
+
+  function actualizarNombreArchivo(input, nameElId, errElId) {
+    const nameEl = document.getElementById(nameElId);
+    if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : "Sin archivo seleccionado";
+    const errEl = document.getElementById(errElId);
+    if (errEl) errEl.style.display = "none";
   }
 
   function actualizarNombreDenuncia(input) {
@@ -1707,6 +1768,22 @@
       } else {
         if (denunciaErr) denunciaErr.style.display = "none";
       }
+      const alcoholemiaFile = document.getElementById("adjuntar_alcoholemia")?.files?.[0];
+      const alcoholemiaErrV  = document.getElementById("alcoholemia-size-error");
+      if (alcoholemiaFile && alcoholemiaFile.size > 5 * 1024 * 1024) {
+        if (alcoholemiaErrV) alcoholemiaErrV.style.display = "";
+        ok = false;
+      } else {
+        if (alcoholemiaErrV) alcoholemiaErrV.style.display = "none";
+      }
+      const ampliacionNacionFile = document.getElementById("adjuntar_ampliacion_nacion")?.files?.[0];
+      const ampliacionNacionErrV  = document.getElementById("ampliacion-nacion-size-error");
+      if (ampliacionNacionFile && ampliacionNacionFile.size > 5 * 1024 * 1024) {
+        if (ampliacionNacionErrV) ampliacionNacionErrV.style.display = "";
+        ok = false;
+      } else {
+        if (ampliacionNacionErrV) ampliacionNacionErrV.style.display = "none";
+      }
     }
     return ok;
   }
@@ -1771,6 +1848,31 @@
       }
     }
 
+    let alcoholemiaB64 = '', alcoholemiaNombre = '';
+    let ampliacionNacionB64 = '', ampliacionNacionNombre = '';
+    if (!esArt && art === "Nacion Seguros") {
+      const alcFile = document.getElementById("adjuntar_alcoholemia")?.files?.[0];
+      if (alcFile) {
+        alcoholemiaNombre = alcFile.name;
+        alcoholemiaB64 = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload  = () => resolve(r.result.split(',')[1]);
+          r.onerror = reject;
+          r.readAsDataURL(alcFile);
+        });
+      }
+      const ampFile = document.getElementById("adjuntar_ampliacion_nacion")?.files?.[0];
+      if (ampFile) {
+        ampliacionNacionNombre = ampFile.name;
+        ampliacionNacionB64 = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload  = () => resolve(r.result.split(',')[1]);
+          r.onerror = reject;
+          r.readAsDataURL(ampFile);
+        });
+      }
+    }
+
     let payload, url, lines;
 
     if (esArt) {
@@ -1807,8 +1909,12 @@
         seguro_carpeta:   segCarpeta,
         mail_asegurado:   g("mail_asegurado"),
         cc_abogados:      getCCSeleccionados(),
-        denuncia_b64:     denunciaB64,
-        denuncia_nombre:  denunciaNombre,
+        denuncia_b64:             denunciaB64,
+        denuncia_nombre:          denunciaNombre,
+        alcoholemia_b64:          alcoholemiaB64,
+        alcoholemia_nombre:       alcoholemiaNombre,
+        ampliacion_nacion_b64:    ampliacionNacionB64,
+        ampliacion_nacion_nombre: ampliacionNacionNombre,
       };
       lines = [
         ["N° Siniestro", payload.nro_siniestro],
