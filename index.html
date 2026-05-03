@@ -698,6 +698,12 @@
        RESULT SCREENS
     ══════════════════════════════════════ */
     #screenOk, #screenError { display: none; }
+    #msgEnviando { display:none; margin-top:16px; }
+    #progressLabel { font-size:13px; color:var(--navy); text-align:center; margin-bottom:6px; font-weight:600; }
+    #progressBar { width:100%; height:12px; border-radius:8px; overflow:hidden; appearance:none; -webkit-appearance:none; border:none; background:#dce8f5; }
+    #progressBar::-webkit-progress-bar { background:#dce8f5; border-radius:8px; }
+    #progressBar::-webkit-progress-value { background:linear-gradient(90deg,var(--navy),#4db8d4); border-radius:8px; transition:width 0.2s; }
+    #progressBar::-moz-progress-bar { background:linear-gradient(90deg,var(--navy),#4db8d4); border-radius:8px; }
     .screen-card {
       background: white;
       border-radius: var(--radius);
@@ -1474,6 +1480,10 @@
         <small>Se notificará al empleado y empleador</small>
       </div>
     </button>
+    <div id="msgEnviando">
+      <div id="progressLabel">Preparando datos...</div>
+      <progress id="progressBar" value="0" max="100"></progress>
+    </div>
   </div>
 
 </div>
@@ -1923,17 +1933,38 @@
       ];
     }
 
+    const label = document.getElementById("progressLabel");
+    const bar   = document.getElementById("progressBar");
+    document.getElementById("msgEnviando").style.display = "block";
+
     try {
-      const _ctrl = new AbortController();
-      const _timer = setTimeout(() => _ctrl.abort(), 120000);
-      const res = await fetch(url, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(payload),
-        signal:  _ctrl.signal,
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.timeout = 120000;
+
+        xhr.upload.onprogress = e => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            bar.value = pct;
+            label.textContent = pct < 100
+              ? `Subiendo datos... ${pct}%`
+              : "Procesando...";
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error("HTTP " + xhr.status));
+        };
+        xhr.onerror   = () => reject(new Error("network"));
+        xhr.ontimeout = () => reject(new Error("timeout"));
+
+        xhr.open("POST", url);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(JSON.stringify(payload));
       });
-      clearTimeout(_timer);
-      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      document.getElementById("msgEnviando").style.display = "none";
 
       const detail = document.getElementById("screenOkDetail");
       detail.replaceChildren();
@@ -1955,10 +1986,11 @@
 
     } catch (err) {
       console.error("[Sistema] Error al abrir caso:", err.message || err);
+      document.getElementById("msgEnviando").style.display = "none";
       const _panel = document.getElementById("screenError");
       const _msgEl = _panel.querySelector("p");
       if (_msgEl) {
-        _msgEl.textContent = err.name === "AbortError"
+        _msgEl.textContent = err.message === "timeout"
           ? "La solicitud tardó demasiado. Revisá tu conexión e intentá nuevamente."
           : "Hubo un problema al procesar el caso. Por favor, revisá tu conexión e intentá nuevamente.";
       }
