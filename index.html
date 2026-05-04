@@ -2012,6 +2012,14 @@
     if (raw.length <= 2)      input.value = raw;
     else if (raw.length <= 4) input.value = raw.slice(0,2) + '/' + raw.slice(2);
     else                      input.value = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4);
+    if (raw.length === 8) {
+      var anio = parseInt(raw.slice(4), 10);
+      var hoy  = new Date().getFullYear();
+      if (anio < 2000 || anio > hoy) {
+        input.value = raw.slice(0,2) + '/' + raw.slice(2,4) + '/';
+        input.style.borderColor = '#e74c3c';
+      } else { input.style.borderColor = ''; }
+    } else { input.style.borderColor = ''; }
   }
 </script>
 
