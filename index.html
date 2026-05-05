@@ -698,7 +698,7 @@
     /* ══════════════════════════════════════
        RESULT SCREENS
     ══════════════════════════════════════ */
-    #screenOk, #screenError { display: none; }
+    #screenOk { display: none; }
     #modalEnviando { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; }
     #modalEnviando.activo { display:flex; }
     #modalBox { background:#fff; border-radius:12px; padding:32px 28px; max-width:360px; width:90%; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.18); }
@@ -1532,22 +1532,20 @@
   </div>
 </div>
 
-<!-- ─── PANTALLA ERROR ─── -->
-<div id="screenError" class="page-wrap">
-  <div class="screen-card">
-    <div class="screen-icon-wrap screen-icon-err">⚠️</div>
-    <h2>Error al abrir el caso</h2>
-    <p>No se pudo conectar con el servidor. Verificá tu conexión e intentá nuevamente.</p>
-    <button class="btn-retry" onclick="resetError()">↩ Reintentar</button>
-  </div>
-</div>
-
 <!-- MODAL ENVIANDO -->
 <div id="modalEnviando">
   <div id="modalBox">
-    <div id="progressLabel">Preparando datos...</div>
-    <div id="progressBar"><div id="progressFill"></div></div>
-    <p id="modalMsg">Procesando su información, por favor aguarde...</p>
+    <div id="modalProgress">
+      <div id="progressLabel">Preparando datos...</div>
+      <div id="progressBar"><div id="progressFill"></div></div>
+      <p id="modalMsg">Procesando su información, por favor aguarde...</p>
+    </div>
+    <div id="modalError" style="display:none">
+      <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+      <h3 style="color:#c0392b;margin:0 0 8px;font-size:17px">Error al abrir el caso</h3>
+      <p id="modalErrorMsg" style="font-size:14px;color:#555;margin:0 0 16px;line-height:1.5">No se pudo conectar con el servidor. Verificá tu conexión e intentá nuevamente.</p>
+      <button class="btn-retry" onclick="resetError()">↩ Reintentar</button>
+    </div>
   </div>
 </div>
 
@@ -2036,15 +2034,14 @@
 
     } catch (err) {
       console.error("[Sistema] Error al abrir caso:", err.message || err);
-      document.getElementById("modalEnviando").classList.remove("activo");
-      const _panel = document.getElementById("screenError");
-      const _msgEl = _panel.querySelector("p");
+      const _msgEl = document.getElementById("modalErrorMsg");
       if (_msgEl) {
         _msgEl.textContent = err.message === "timeout"
           ? "La solicitud tardó demasiado. Revisá tu conexión e intentá nuevamente."
           : "Hubo un problema al procesar el caso. Por favor, revisá tu conexión e intentá nuevamente.";
       }
-      _panel.style.display = "block";
+      document.getElementById("modalProgress").style.display = "none";
+      document.getElementById("modalError").style.display = "block";
       btn.disabled = false;
       const _lbl2 = btn.querySelector(".btn-submit-label");
       if (_lbl2) _lbl2.innerHTML = tipoCaso === "art"
@@ -2064,7 +2061,9 @@
   }
 
   function resetError() {
-    document.getElementById("screenError").style.display = "none";
+    document.getElementById("modalEnviando").classList.remove("activo");
+    document.getElementById("modalError").style.display = "none";
+    document.getElementById("modalProgress").style.display = "block";
     document.getElementById("pageWrap").style.display = "block";
   }
   function formatFecha(input) {
