@@ -1179,7 +1179,7 @@
       <div id="contacto-art">
         <div class="row-2">
           <div class="field">
-            <label>Mail del Empleado <span class="req">*</span></label>
+            <label>Mail del Empleado <span style="font-weight:400;color:#888;font-size:13px">(opcional)</span></label>
             <div class="input-wrap">
               <span class="input-icon">@</span>
               <input type="email" id="mail_empleado" placeholder="empleado@mail.com" maxlength="80">
@@ -1494,6 +1494,14 @@
     <h2>Caso abierto exitosamente</h2>
     <p>Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador.</p>
     <div class="screen-detail" id="screenOkDetail"></div>
+    <div id="linkEmpleadoWrap" style="display:none;margin-top:16px;padding:14px 16px;background:#f0f4fa;border-radius:8px;border:1px solid #d0dae8;text-align:left;">
+      <p style="margin:0 0 8px;font-size:14px;color:#1a3a6b;font-weight:600;">📋 Link para el empleado</p>
+      <p style="margin:0 0 10px;font-size:13px;color:#555;">No se envió mail al empleado. Compartí este link manualmente:</p>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="linkEmpleadoInput" type="text" readonly style="flex:1;padding:8px 10px;border:1px solid #c0cce0;border-radius:6px;font-size:13px;background:#fff;color:#222;">
+        <button onclick="copiarLinkEmpleado()" id="btnCopiarLink" style="padding:8px 14px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Copiar</button>
+      </div>
+    </div>
     <br>
     <button onclick="location.reload()" style="margin-top:8px;padding:12px 32px;background:var(--navy);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">
       &#8592; Abrir otro caso
@@ -1697,7 +1705,7 @@
     let paso1Ok, paso2Ok;
     if (esArt) {
       paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre") && segCarpeta;
-      paso2Ok = g("mail_empleado") && g("mail_empleador");
+      paso2Ok = !!g("mail_empleador");
     } else {
       paso1Ok = g("nro_siniestro") && g("nombre_asegurado") && segCarpeta;
       paso2Ok = !!g("mail_asegurado");
@@ -1758,7 +1766,7 @@
     if (esArt) {
       ok = require("empleado_nombre",  "Ingresá el nombre del empleado")             && ok;
       ok = require("empleador_nombre", "Ingresá el nombre del empleador / empresa")  && ok;
-      ok = requireEmail("mail_empleado",  "Ingresá un mail válido para el empleado") && ok;
+      if (g("mail_empleado")) ok = requireEmail("mail_empleado", "Ingresá un mail válido para el empleado") && ok;
       ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador")&& ok;
     } else {
       ok = require("nombre_asegurado",    "Ingresá el nombre del asegurado")            && ok;
@@ -1988,8 +1996,19 @@
 
       const msgEl = document.querySelector("#screenOk p");
       if (msgEl) msgEl.textContent = esArt
-        ? "Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador."
+        ? (payload.mail_empleado
+            ? "Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador."
+            : "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al empleador.")
         : "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al asegurado.";
+
+      const linkBox = document.getElementById("linkEmpleadoWrap");
+      if (esArt && !payload.mail_empleado) {
+        document.getElementById("linkEmpleadoInput").value =
+          `https://4470n.github.io/Ampliacion-Empleado/?caso=${encodeURIComponent(payload.nro_siniestro)}`;
+        linkBox.style.display = "block";
+      } else {
+        linkBox.style.display = "none";
+      }
 
       document.getElementById("pageWrap").style.display = "none";
       document.getElementById("screenOk").style.display = "block";
@@ -2011,6 +2030,16 @@
         ? "Abrir caso y enviar formularios<small>Se notificará al empleado y empleador</small>"
         : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
     }
+  }
+
+  function copiarLinkEmpleado() {
+    const inp = document.getElementById("linkEmpleadoInput");
+    inp.select();
+    navigator.clipboard.writeText(inp.value).then(() => {
+      const btn = document.getElementById("btnCopiarLink");
+      btn.textContent = "¡Copiado!";
+      setTimeout(() => btn.textContent = "Copiar", 2000);
+    }).catch(() => { document.execCommand("copy"); });
   }
 
   function resetError() {
