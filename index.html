@@ -1766,7 +1766,7 @@
     if (esArt) {
       ok = require("empleado_nombre",  "Ingresá el nombre del empleado")             && ok;
       ok = require("empleador_nombre", "Ingresá el nombre del empleador / empresa")  && ok;
-      if (g("mail_empleado")) ok = requireEmail("mail_empleado", "Ingresá un mail válido para el empleado") && ok;
+      if (document.getElementById("mail_empleado")?.value?.trim()) ok = requireEmail("mail_empleado", "Ingresá un mail válido para el empleado") && ok;
       ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador")&& ok;
     } else {
       ok = require("nombre_asegurado",    "Ingresá el nombre del asegurado")            && ok;
