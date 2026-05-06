@@ -1207,7 +1207,7 @@
             </div>
           </div>
           <div class="field">
-            <label>Mail del Empleador <span class="req">*</span></label>
+            <label>Mail del Empleador <span style="font-weight:400;color:#888;font-size:13px">(opcional)</span></label>
             <div class="input-wrap">
               <span class="input-icon">@</span>
               <input type="email" id="mail_empleador" placeholder="empresa@mail.com" maxlength="80">
@@ -1523,6 +1523,14 @@
         <button onclick="copiarLinkEmpleado()" id="btnCopiarLink" style="padding:8px 14px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Copiar</button>
       </div>
     </div>
+    <div id="linkEmpleadorWrap" style="display:none;margin-top:16px;padding:14px 16px;background:#f0f4fa;border-radius:8px;border:1px solid #d0dae8;text-align:left;">
+      <p style="margin:0 0 8px;font-size:14px;color:#1a3a6b;font-weight:600;">📋 Link para el empleador</p>
+      <p style="margin:0 0 10px;font-size:13px;color:#555;">No se envió mail al empleador. Compartí este link manualmente:</p>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="linkEmpleadorInput" type="text" readonly style="flex:1;padding:8px 10px;border:1px solid #c0cce0;border-radius:6px;font-size:13px;background:#fff;color:#222;">
+        <button onclick="copiarLinkEmpleador()" id="btnCopiarLinkEmpleador" style="padding:8px 14px;background:var(--navy);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Copiar</button>
+      </div>
+    </div>
     <br>
     <button onclick="location.reload()" style="margin-top:8px;padding:12px 32px;background:var(--navy);color:white;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">
       &#8592; Abrir otro caso
@@ -1724,7 +1732,7 @@
     let paso1Ok, paso2Ok;
     if (esArt) {
       paso1Ok = g("nro_siniestro") && g("empleado_nombre") && g("empleador_nombre") && segCarpeta;
-      paso2Ok = !!g("mail_empleador");
+      paso2Ok = true;
     } else {
       paso1Ok = g("nro_siniestro") && g("nombre_asegurado") && segCarpeta;
       paso2Ok = !!g("mail_asegurado");
@@ -1786,7 +1794,7 @@
       ok = require("empleado_nombre",  "Ingresá el nombre del empleado")             && ok;
       ok = require("empleador_nombre", "Ingresá el nombre del empleador / empresa")  && ok;
       if (document.getElementById("mail_empleado")?.value?.trim()) ok = requireEmail("mail_empleado", "Ingresá un mail válido para el empleado") && ok;
-      ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador")&& ok;
+      if (document.getElementById("mail_empleador")?.value?.trim()) ok = requireEmail("mail_empleador", "Ingresá un mail válido para el empleador") && ok;
     } else {
       ok = require("nombre_asegurado",    "Ingresá el nombre del asegurado")            && ok;
       ok = requireEmail("mail_asegurado", "Ingresá un mail válido para el asegurado")   && ok;
@@ -2013,20 +2021,39 @@
         if (i < lines.length - 1) detail.appendChild(document.createElement("br"));
       });
 
+      const tieneEmpleado  = !!payload.mail_empleado;
+      const tieneEmpleador = !!payload.mail_empleador;
       const msgEl = document.querySelector("#screenOk p");
-      if (msgEl) msgEl.textContent = esArt
-        ? (payload.mail_empleado
-            ? "Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador."
-            : "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al empleador.")
-        : "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al asegurado.";
+      if (msgEl) {
+        if (!esArt) {
+          msgEl.textContent = "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al asegurado.";
+        } else if (tieneEmpleado && tieneEmpleador) {
+          msgEl.textContent = "Se registró el caso en el sistema, se creó la carpeta en Drive y se enviaron los formularios al empleado y empleador.";
+        } else if (tieneEmpleado) {
+          msgEl.textContent = "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al empleado.";
+        } else if (tieneEmpleador) {
+          msgEl.textContent = "Se registró el caso en el sistema, se creó la carpeta en Drive y se envió el formulario al empleador.";
+        } else {
+          msgEl.textContent = "Se registró el caso en el sistema y se creó la carpeta en Drive. Compartí los links de formularios manualmente.";
+        }
+      }
 
       const linkBox = document.getElementById("linkEmpleadoWrap");
-      if (esArt && !payload.mail_empleado) {
+      if (esArt && !tieneEmpleado) {
         document.getElementById("linkEmpleadoInput").value =
           `https://4470n.github.io/Ampliacion-Empleado/?caso=${encodeURIComponent(payload.nro_siniestro)}`;
         linkBox.style.display = "block";
       } else {
         linkBox.style.display = "none";
+      }
+
+      const linkBoxEmpr = document.getElementById("linkEmpleadorWrap");
+      if (esArt && !tieneEmpleador) {
+        document.getElementById("linkEmpleadorInput").value =
+          `https://4470n.github.io/Ampliacion-Empleador/?caso=${encodeURIComponent(payload.nro_siniestro)}`;
+        linkBoxEmpr.style.display = "block";
+      } else {
+        linkBoxEmpr.style.display = "none";
       }
 
       document.getElementById("pageWrap").style.display = "none";
@@ -2055,6 +2082,16 @@
     inp.select();
     navigator.clipboard.writeText(inp.value).then(() => {
       const btn = document.getElementById("btnCopiarLink");
+      btn.textContent = "¡Copiado!";
+      setTimeout(() => btn.textContent = "Copiar", 2000);
+    }).catch(() => { document.execCommand("copy"); });
+  }
+
+  function copiarLinkEmpleador() {
+    const inp = document.getElementById("linkEmpleadorInput");
+    inp.select();
+    navigator.clipboard.writeText(inp.value).then(() => {
+      const btn = document.getElementById("btnCopiarLinkEmpleador");
       btn.textContent = "¡Copiado!";
       setTimeout(() => btn.textContent = "Copiar", 2000);
     }).catch(() => { document.execCommand("copy"); });
