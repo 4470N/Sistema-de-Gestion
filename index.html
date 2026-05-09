@@ -1875,9 +1875,12 @@
   }
 
   // ── Envío ──
+  let enviando = false;
   async function enviarFormulario() {
+    if (enviando) return;
     if (!validar()) return;
 
+    enviando = true;
     const btn = document.getElementById("btnSubmit");
     btn.disabled = true;
     const _lbl = btn.querySelector(".btn-submit-label");
@@ -2069,11 +2072,6 @@
       }
       document.getElementById("modalProgress").style.display = "none";
       document.getElementById("modalError").style.display = "block";
-      btn.disabled = false;
-      const _lbl2 = btn.querySelector(".btn-submit-label");
-      if (_lbl2) _lbl2.innerHTML = tipoCaso === "art"
-        ? "Abrir caso y enviar formularios<small>Se notificará al empleado y empleador</small>"
-        : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
     }
   }
 
@@ -2102,6 +2100,15 @@
     document.getElementById("modalError").style.display = "none";
     document.getElementById("modalProgress").style.display = "block";
     document.getElementById("pageWrap").style.display = "block";
+    enviando = false;
+    const btn = document.getElementById("btnSubmit");
+    if (btn) {
+      btn.disabled = false;
+      const _lbl = btn.querySelector(".btn-submit-label");
+      if (_lbl) _lbl.innerHTML = tipoCaso === "art"
+        ? "Abrir caso y enviar formularios<small>Se notificará al empleado y empleador</small>"
+        : "Abrir caso y enviar formulario<small>Se notificará al asegurado</small>";
+    }
   }
   function formatFecha(input) {
     var raw = input.value.replace(/\D/g, '').slice(0, 8);
